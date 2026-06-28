@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebP to PNG Converter Online Free | ImgKitLab</title>
+  <meta name="description" content="Convert WebP to PNG online in your browser. Free, fast, no upload. Get widely compatible PNG files from WebP images.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/webp-to-png.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"WebP to PNG Converter","url":"https://imgkitlab.pages.dev/tools/webp-to-png.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="webp-to-png.html">WebP to PNG</a><a href="png-to-webp.html">PNG to WebP</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>WebP to PNG Converter</h1>
+        <p class="subtitle">Convert WebP images to PNG for software that does not support WebP. 100% browser-based.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your WebP here</strong> or click to browse</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <button type="button" class="btn btn-primary" id="processBtn">Convert to PNG</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download PNG</button></div>
+        </div>
+        <section class="content-section">
+          <h2>FAQ</h2>
+          <div class="faq-item"><h3>Why convert WebP to PNG?</h3><p>Some older apps and editors do not open WebP. PNG is universally supported.</p></div>
+          <div class="faq-item"><h3>Is transparency preserved?</h3><p>Yes. PNG export keeps alpha channels from WebP images.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related</h2><ul class="related-links">
+          <li><a href="png-to-webp.html">PNG to WebP</a></li><li><a href="jpg-to-webp.html">JPG to WebP</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container"><div class="footer-bottom"><p>&copy; 2026 ImgKitLab</p></div></div></footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      let currentFile, resultBlob;
+      const message = document.getElementById('message');
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        currentFile = file;
+        await ImgKitLab.loadImageFromFile(file);
+        ImgKitLab.showControls(document.getElementById('controls'));
+      });
+      document.getElementById('processBtn').addEventListener('click', async () => {
+        if (!currentFile) return;
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const img = await ImgKitLab.loadImageFromFile(currentFile);
+          resultBlob = await ImgKitLab.canvasToBlob(ImgKitLab.imageToCanvas(img), 'image/png');
+          document.getElementById('previewArea').classList.add('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '.png');
+      });
+    })();
+  </script>
+</body>
+</html>

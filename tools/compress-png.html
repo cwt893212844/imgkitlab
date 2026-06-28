@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compress PNG Online Free - No Upload | ImgKitLab</title>
+  <meta name="description" content="Compress PNG images online in your browser. Export as optimized PNG or JPEG. No upload — 100% private and free.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/compress-png.html">
+  <meta property="og:title" content="Compress PNG Online Free | ImgKitLab">
+  <meta property="og:description" content="Shrink PNG file size in your browser. No upload required.">
+  <meta property="og:url" content="https://imgkitlab.pages.dev/tools/compress-png.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Compress PNG Online","url":"https://imgkitlab.pages.dev/tools/compress-png.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="compress-png.html">Compress PNG</a><a href="png-to-webp.html">PNG to WebP</a><a href="../pages/about.html">About</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>Compress PNG Online</h1>
+        <p class="subtitle">Reduce PNG file size by re-encoding or converting to JPEG. All processing is local.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your PNG here</strong> or click to browse</p>
+          <p class="hint">PNG, JPEG, WebP · Max 25 MB</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-row">
+            <div class="control-group">
+              <label for="outputFormat">Output Format</label>
+              <select id="outputFormat">
+                <option value="image/png">PNG (lossless)</option>
+                <option value="image/jpeg">JPEG (smaller, no transparency)</option>
+                <option value="image/webp">WebP (smallest)</option>
+              </select>
+            </div>
+            <div class="control-group" id="qualityGroup">
+              <label for="quality">Quality: <span id="qualityValue">85%</span></label>
+              <input type="range" id="quality" min="10" max="100" value="85">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="processBtn">Compress Image</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Compressed</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
+          <div class="stats-bar" id="statsBar" hidden></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download</button></div>
+        </div>
+        <section class="content-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item"><h3>Why is my PNG still large after compression?</h3><p>PNG is lossless. For photos, converting to JPEG or WebP usually produces much smaller files. Try our <a href="png-to-webp.html">PNG to WebP</a> converter.</p></div>
+          <div class="faq-item"><h3>Will transparency be preserved?</h3><p>Yes with PNG and WebP output. JPEG does not support transparency — transparent areas become white.</p></div>
+          <div class="faq-item"><h3>Are images uploaded?</h3><p>No. Everything runs in your browser using the Canvas API.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related Tools</h2><ul class="related-links">
+          <li><a href="compress-jpg.html">Compress JPG</a></li><li><a href="png-to-webp.html">PNG to WebP</a></li><li><a href="webp-to-png.html">WebP to PNG</a></li><li><a href="resize-image.html">Resize Image</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><h3>Tools</h3><ul><li><a href="compress-png.html">Compress PNG</a></li><li><a href="png-to-webp.html">PNG to WebP</a></li></ul></div>
+        <div><h3>Site</h3><ul><li><a href="../pages/about.html">About</a></li><li><a href="../pages/privacy.html">Privacy</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 ImgKitLab.</p></div>
+    </div>
+  </footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      const outputFormat = document.getElementById('outputFormat');
+      const quality = document.getElementById('quality');
+      const qualityGroup = document.getElementById('qualityGroup');
+      const qualityValue = document.getElementById('qualityValue');
+      const controls = document.getElementById('controls');
+      const message = document.getElementById('message');
+      const previewArea = document.getElementById('previewArea');
+      let currentFile, currentImg, resultBlob, ext = 'png';
+
+      ImgKitLab.setupRangeSlider(quality, qualityValue, (v) => v + '%');
+      outputFormat.addEventListener('change', () => {
+        if (outputFormat.value === 'image/png') qualityGroup.setAttribute('hidden', '');
+        else qualityGroup.removeAttribute('hidden');
+      });
+
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        try {
+          ImgKitLab.hideMessage(message);
+          currentFile = file;
+          currentImg = await ImgKitLab.loadImageFromFile(file);
+          document.getElementById('originalPreview').innerHTML = '';
+          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
+          document.getElementById('originalMeta').textContent = `${file.name} · ${ImgKitLab.formatFileSize(file.size)}`;
+          ImgKitLab.showControls(controls);
+          previewArea.classList.remove('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+      });
+
+      document.getElementById('processBtn').addEventListener('click', async () => {
+        if (!currentImg) return;
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const mime = outputFormat.value;
+          const q = parseInt(quality.value, 10) / 100;
+          const canvas = ImgKitLab.imageToCanvas(currentImg);
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, mime === 'image/png' ? undefined : q);
+          ext = mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png';
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Result">`;
+          document.getElementById('resultMeta').textContent = ImgKitLab.formatFileSize(resultBlob.size);
+          const saved = currentFile.size - resultBlob.size;
+          const statsBar = document.getElementById('statsBar');
+          statsBar.classList.add('is-visible'); statsBar.removeAttribute('hidden');
+          statsBar.innerHTML = saved > 0
+            ? `<span class="saved">Saved ${ImgKitLab.formatFileSize(saved)} (${ImgKitLab.formatPercent(saved, currentFile.size)})</span>`
+            : `<span>Output: ${ImgKitLab.formatFileSize(resultBlob.size)}</span>`;
+          previewArea.classList.add('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '-compressed.' + ext);
+      });
+    })();
+  </script>
+</body>
+</html>

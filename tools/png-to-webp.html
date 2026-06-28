@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PNG to WebP Converter Online Free - No Upload | ImgKitLab</title>
+  <meta name="description" content="Convert PNG to WebP online in your browser. Smaller file sizes with optional transparency. No upload — 100% private.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/png-to-webp.html">
+  <meta property="og:title" content="PNG to WebP Converter | ImgKitLab">
+  <meta property="og:description" content="Convert PNG images to WebP locally in your browser.">
+  <meta property="og:url" content="https://imgkitlab.pages.dev/tools/png-to-webp.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"PNG to WebP Converter","url":"https://imgkitlab.pages.dev/tools/png-to-webp.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="png-to-webp.html">PNG to WebP</a><a href="webp-to-png.html">WebP to PNG</a><a href="../pages/about.html">About</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>PNG to WebP Converter</h1>
+        <p class="subtitle">Convert PNG images to WebP for smaller file sizes. Transparency is preserved when supported.</p>
+        <div id="webpWarning" class="message message-info" hidden></div>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your PNG here</strong> or click to browse</p>
+          <p class="hint">PNG, JPEG, WebP · Max 25 MB</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-group">
+            <label for="quality">WebP Quality: <span id="qualityValue">85%</span></label>
+            <input type="range" id="quality" min="10" max="100" value="85">
+          </div>
+          <button type="button" class="btn btn-primary" id="processBtn">Convert to WebP</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>WebP</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
+          <div class="stats-bar" id="statsBar" hidden></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download WebP</button></div>
+        </div>
+        <section class="content-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item"><h3>Why convert PNG to WebP?</h3><p>WebP typically produces files 25–35% smaller than PNG with similar visual quality, ideal for websites.</p></div>
+          <div class="faq-item"><h3>Is WebP lossless?</h3><p>This tool uses lossy WebP at your chosen quality. For photos, quality 80–90 is usually excellent.</p></div>
+          <div class="faq-item"><h3>Does my browser support WebP export?</h3><p>All modern browsers support WebP. If conversion fails, try Chrome, Firefox, or Edge.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related Tools</h2><ul class="related-links">
+          <li><a href="webp-to-png.html">WebP to PNG</a></li><li><a href="jpg-to-webp.html">JPG to WebP</a></li><li><a href="compress-png.html">Compress PNG</a></li><li><a href="compress-jpg.html">Compress JPG</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><h3>Convert</h3><ul><li><a href="png-to-webp.html">PNG to WebP</a></li><li><a href="webp-to-png.html">WebP to PNG</a></li></ul></div>
+        <div><h3>Site</h3><ul><li><a href="../pages/privacy.html">Privacy</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 ImgKitLab.</p></div>
+    </div>
+  </footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      if (!ImgKitLab.supportsWebP()) {
+        const w = document.getElementById('webpWarning');
+        w.textContent = 'Your browser may not support WebP export. Please use a modern browser such as Chrome, Firefox, or Edge.';
+        w.classList.add('visible');
+        w.removeAttribute('hidden');
+      }
+      const quality = document.getElementById('quality');
+      const qualityValue = document.getElementById('qualityValue');
+      const message = document.getElementById('message');
+      let currentFile, currentImg, resultBlob;
+      ImgKitLab.setupRangeSlider(quality, qualityValue, (v) => v + '%');
+
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        try {
+          currentFile = file;
+          currentImg = await ImgKitLab.loadImageFromFile(file);
+          document.getElementById('originalPreview').innerHTML = '';
+          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
+          document.getElementById('originalMeta').textContent = `${file.name} · ${ImgKitLab.formatFileSize(file.size)}`;
+          ImgKitLab.showControls(document.getElementById('controls'));
+          document.getElementById('previewArea').classList.remove('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+      });
+
+      document.getElementById('processBtn').addEventListener('click', async () => {
+        if (!currentImg) return;
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const canvas = ImgKitLab.imageToCanvas(currentImg);
+          const q = parseInt(quality.value, 10) / 100;
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, 'image/webp', q);
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="WebP result">`;
+          document.getElementById('resultMeta').textContent = ImgKitLab.formatFileSize(resultBlob.size);
+          const saved = currentFile.size - resultBlob.size;
+          const statsBar = document.getElementById('statsBar');
+          statsBar.classList.add('is-visible'); statsBar.removeAttribute('hidden');
+          statsBar.innerHTML = saved > 0
+            ? `<span class="saved">Saved ${ImgKitLab.formatFileSize(saved)} (${ImgKitLab.formatPercent(saved, currentFile.size)})</span>`
+            : `<span>WebP size: ${ImgKitLab.formatFileSize(resultBlob.size)}</span>`;
+          document.getElementById('previewArea').classList.add('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '.webp');
+      });
+    })();
+  </script>
+</body>
+</html>

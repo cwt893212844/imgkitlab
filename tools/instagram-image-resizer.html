@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram Image Resizer Online Free | ImgKitLab</title>
+  <meta name="description" content="Resize images for Instagram posts, stories, and reels. Browser-based, no upload. Free Instagram dimension presets.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/instagram-image-resizer.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Instagram Image Resizer","url":"https://imgkitlab.pages.dev/tools/instagram-image-resizer.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="instagram-image-resizer.html">Instagram</a><a href="resize-image.html">Resize</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>Instagram Image Resizer</h1>
+        <p class="subtitle">Resize photos to Instagram post, story, and reel dimensions with one click.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your image here</strong> or click to browse</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-group">
+            <label>Instagram preset</label>
+            <div class="preset-buttons">
+              <button type="button" class="btn btn-secondary preset" data-w="1080" data-h="1080" data-label="Post Square">Post 1080×1080</button>
+              <button type="button" class="btn btn-secondary preset" data-w="1080" data-h="1350" data-label="Post Portrait">Post 4:5</button>
+              <button type="button" class="btn btn-secondary preset" data-w="1080" data-h="566" data-label="Post Landscape">Post 1.91:1</button>
+              <button type="button" class="btn btn-secondary preset" data-w="1080" data-h="1920" data-label="Story/Reel">Story 9:16</button>
+            </div>
+          </div>
+          <p id="selectedPreset" class="hint" style="color:var(--color-muted);">Select a preset above, then resize.</p>
+          <button type="button" class="btn btn-primary" id="processBtn" disabled>Resize for Instagram</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-box"><h3>Result</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download JPEG</button></div>
+        </div>
+        <section class="content-section">
+          <div class="faq-item"><h3>What size should Instagram posts be?</h3><p>Square posts work best at 1080×1080. Portrait posts use 1080×1350 (4:5). Stories and reels use 1080×1920 (9:16).</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related</h2><ul class="related-links">
+          <li><a href="resize-image.html">Resize Image</a></li><li><a href="crop-image.html">Crop Image</a></li><li><a href="compress-jpg.html">Compress JPG</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container"><div class="footer-bottom"><p>&copy; 2026 ImgKitLab</p></div></div></footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      let currentFile, currentImg, resultBlob, targetW, targetH, label;
+      const processBtn = document.getElementById('processBtn');
+
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        currentFile = file;
+        currentImg = await ImgKitLab.loadImageFromFile(file);
+        ImgKitLab.showControls(document.getElementById('controls'));
+        processBtn.disabled = true;
+      });
+
+      document.querySelectorAll('.preset').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          targetW = parseInt(btn.dataset.w, 10);
+          targetH = parseInt(btn.dataset.h, 10);
+          label = btn.dataset.label;
+          document.getElementById('selectedPreset').textContent = `Selected: ${label} (${targetW}×${targetH})`;
+          processBtn.disabled = false;
+          document.querySelectorAll('.preset').forEach((b) => b.classList.remove('btn-primary'));
+          btn.classList.add('btn-primary');
+          btn.classList.remove('btn-secondary');
+        });
+      });
+
+      processBtn.addEventListener('click', async () => {
+        if (!currentImg || !targetW) return;
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const canvas = ImgKitLab.imageToCanvas(currentImg, targetW, targetH);
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, 'image/jpeg', 0.92);
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Instagram sized">`;
+          document.getElementById('resultMeta').textContent = `${targetW}×${targetH} · ${ImgKitLab.formatFileSize(resultBlob.size)}`;
+          document.getElementById('previewArea').classList.add('visible');
+        } catch (e) { ImgKitLab.showMessage(document.getElementById('message'), e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '-instagram.jpg');
+      });
+    })();
+  </script>
+</body>
+</html>

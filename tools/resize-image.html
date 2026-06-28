@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resize Image Online Free - No Upload | ImgKitLab</title>
+  <meta name="description" content="Resize images online in your browser. Set custom dimensions, lock aspect ratio, use social presets. No upload — files stay private.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/resize-image.html">
+  <meta property="og:title" content="Resize Image Online Free | ImgKitLab">
+  <meta property="og:description" content="Change image dimensions instantly. No upload required.">
+  <meta property="og:url" content="https://imgkitlab.pages.dev/tools/resize-image.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Resize Image Online","url":"https://imgkitlab.pages.dev/tools/resize-image.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="resize-image.html">Resize</a><a href="compress-jpg.html">Compress</a><a href="../pages/about.html">About</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>Resize Image Online</h1>
+        <p class="subtitle">Change image width and height with optional aspect ratio lock and quick presets.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your image here</strong> or click to browse</p>
+          <p class="hint">JPG, PNG, WebP · Max 25 MB</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-row">
+            <div class="control-group"><label for="width">Width (px)</label><input type="number" id="width" min="1" max="10000" value="800"></div>
+            <div class="control-group"><label for="height">Height (px)</label><input type="number" id="height" min="1" max="10000" value="600"></div>
+          </div>
+          <label class="checkbox-label"><input type="checkbox" id="keepRatio" checked> Keep aspect ratio</label>
+          <div class="control-group">
+            <label>Quick presets</label>
+            <div class="preset-buttons">
+              <button type="button" class="btn btn-secondary preset" data-w="1080" data-h="1080">Instagram 1080</button>
+              <button type="button" class="btn btn-secondary preset" data-w="1200" data-h="675">Twitter/X</button>
+              <button type="button" class="btn btn-secondary preset" data-w="1920" data-h="1080">HD 1920</button>
+              <button type="button" class="btn btn-secondary preset" data-w="50" data-h="50">50%</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="outputFormat">Output Format</label>
+            <select id="outputFormat"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select>
+          </div>
+          <button type="button" class="btn btn-primary" id="processBtn">Resize Image</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Resized</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download</button></div>
+        </div>
+        <section class="content-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item"><h3>Will resizing reduce quality?</h3><p>Downscaling generally looks fine. Upscaling beyond original size may appear blurry because new pixels are interpolated.</p></div>
+          <div class="faq-item"><h3>Can I resize for Instagram?</h3><p>Yes. Use the Instagram preset or try our dedicated <a href="instagram-image-resizer.html">Instagram resizer</a>.</p></div>
+          <div class="faq-item"><h3>Is this tool private?</h3><p>Yes. Images are processed locally and never uploaded.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related Tools</h2><ul class="related-links">
+          <li><a href="instagram-image-resizer.html">Instagram Resizer</a></li><li><a href="crop-image.html">Crop Image</a></li><li><a href="compress-jpg.html">Compress JPG</a></li><li><a href="circle-crop.html">Circle Crop</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><h3>Tools</h3><ul><li><a href="resize-image.html">Resize</a></li><li><a href="crop-image.html">Crop</a></li></ul></div>
+        <div><h3>Site</h3><ul><li><a href="../pages/privacy.html">Privacy</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 ImgKitLab.</p></div>
+    </div>
+  </footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      const widthInput = document.getElementById('width');
+      const heightInput = document.getElementById('height');
+      const keepRatio = document.getElementById('keepRatio');
+      const message = document.getElementById('message');
+      let currentFile, currentImg, resultBlob, aspect = 1;
+
+      function syncHeight() {
+        if (keepRatio.checked && aspect) heightInput.value = Math.round(parseInt(widthInput.value, 10) / aspect);
+      }
+      function syncWidth() {
+        if (keepRatio.checked && aspect) widthInput.value = Math.round(parseInt(heightInput.value, 10) * aspect);
+      }
+      widthInput.addEventListener('input', syncHeight);
+      heightInput.addEventListener('input', syncWidth);
+
+      document.querySelectorAll('.preset').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          let w = parseInt(btn.dataset.w, 10);
+          let h = parseInt(btn.dataset.h, 10);
+          if (btn.dataset.w === '50' && currentImg) {
+            w = Math.round(currentImg.naturalWidth * 0.5);
+            h = Math.round(currentImg.naturalHeight * 0.5);
+          }
+          widthInput.value = w;
+          heightInput.value = h;
+          if (btn.dataset.w !== '50') keepRatio.checked = false;
+        });
+      });
+
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        try {
+          currentFile = file;
+          currentImg = await ImgKitLab.loadImageFromFile(file);
+          aspect = currentImg.naturalWidth / currentImg.naturalHeight;
+          widthInput.value = currentImg.naturalWidth;
+          heightInput.value = currentImg.naturalHeight;
+          document.getElementById('originalPreview').innerHTML = '';
+          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
+          document.getElementById('originalMeta').textContent = `${currentImg.naturalWidth}×${currentImg.naturalHeight} · ${ImgKitLab.formatFileSize(file.size)}`;
+          ImgKitLab.showControls(document.getElementById('controls'));
+          document.getElementById('previewArea').classList.remove('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+      });
+
+      document.getElementById('processBtn').addEventListener('click', async () => {
+        if (!currentImg) return;
+        const w = Math.max(1, parseInt(widthInput.value, 10) || 1);
+        const h = Math.max(1, parseInt(heightInput.value, 10) || 1);
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const canvas = ImgKitLab.imageToCanvas(currentImg, w, h);
+          const mime = document.getElementById('outputFormat').value;
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, 0.92);
+          const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Resized">`;
+          document.getElementById('resultMeta').textContent = `${w}×${h} · ${ImgKitLab.formatFileSize(resultBlob.size)}`;
+          document.getElementById('previewArea').classList.add('visible');
+          document.getElementById('downloadBtn').onclick = () => ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '-resized.' + ext);
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+    })();
+  </script>
+</body>
+</html>

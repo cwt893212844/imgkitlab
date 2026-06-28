@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Image Online Free - No Upload | ImgKitLab</title>
+  <meta name="description" content="Crop images online in your browser. Set custom crop region by pixels. Free, private, no upload required.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/crop-image.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Crop Image Online","url":"https://imgkitlab.pages.dev/tools/crop-image.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="crop-image.html">Crop</a><a href="resize-image.html">Resize</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>Crop Image Online</h1>
+        <p class="subtitle">Crop to a custom region using pixel coordinates. Preview before download.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your image here</strong> or click to browse</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-row">
+            <div class="control-group"><label for="cropX">X (left)</label><input type="number" id="cropX" min="0" value="0"></div>
+            <div class="control-group"><label for="cropY">Y (top)</label><input type="number" id="cropY" min="0" value="0"></div>
+            <div class="control-group"><label for="cropW">Width</label><input type="number" id="cropW" min="1" value="100"></div>
+            <div class="control-group"><label for="cropH">Height</label><input type="number" id="cropH" min="1" value="100"></div>
+          </div>
+          <div class="control-group">
+            <label for="outputFormat">Output</label>
+            <select id="outputFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select>
+          </div>
+          <button type="button" class="btn btn-primary" id="processBtn">Crop Image</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-box"><h3>Cropped Result</h3><div id="resultPreview"></div></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download</button></div>
+        </div>
+        <section class="content-section">
+          <div class="faq-item"><h3>How do I choose crop values?</h3><p>X and Y are the top-left corner in pixels. Width and height define the crop box size. Defaults match your full image after upload.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related</h2><ul class="related-links">
+          <li><a href="circle-crop.html">Circle Crop</a></li><li><a href="resize-image.html">Resize</a></li><li><a href="instagram-image-resizer.html">Instagram Resizer</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container"><div class="footer-bottom"><p>&copy; 2026 ImgKitLab</p></div></div></footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      let currentFile, currentImg, resultBlob, ext = 'png';
+      const cropX = document.getElementById('cropX');
+      const cropY = document.getElementById('cropY');
+      const cropW = document.getElementById('cropW');
+      const cropH = document.getElementById('cropH');
+      const message = document.getElementById('message');
+
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        currentFile = file;
+        currentImg = await ImgKitLab.loadImageFromFile(file);
+        cropX.max = cropY.max = 0;
+        cropX.value = 0;
+        cropY.value = 0;
+        cropW.value = currentImg.naturalWidth;
+        cropH.value = currentImg.naturalHeight;
+        cropW.max = currentImg.naturalWidth;
+        cropH.max = currentImg.naturalHeight;
+        cropX.max = currentImg.naturalWidth - 1;
+        cropY.max = currentImg.naturalHeight - 1;
+        ImgKitLab.showControls(document.getElementById('controls'));
+        document.getElementById('previewArea').classList.remove('visible');
+      });
+
+      document.getElementById('processBtn').addEventListener('click', async () => {
+        if (!currentImg) return;
+        const x = Math.max(0, parseInt(cropX.value, 10) || 0);
+        const y = Math.max(0, parseInt(cropY.value, 10) || 0);
+        const w = Math.min(parseInt(cropW.value, 10) || 1, currentImg.naturalWidth - x);
+        const h = Math.min(parseInt(cropH.value, 10) || 1, currentImg.naturalHeight - y);
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const mime = document.getElementById('outputFormat').value;
+          ext = mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png';
+          const canvas = ImgKitLab.cropCanvas(currentImg, x, y, w, h);
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, 0.92);
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Cropped">`;
+          document.getElementById('previewArea').classList.add('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '-cropped.' + ext);
+      });
+    })();
+  </script>
+</body>
+</html>

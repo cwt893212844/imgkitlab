@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compress JPG Online Free - No Upload | ImgKitLab</title>
+  <meta name="description" content="Compress JPG images online for free in your browser. Reduce JPEG file size with quality control. No upload — files stay on your device.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/compress-jpg.html">
+  <meta property="og:title" content="Compress JPG Online Free - No Upload | ImgKitLab">
+  <meta property="og:description" content="Reduce JPEG file size instantly in your browser. No upload required.">
+  <meta property="og:url" content="https://imgkitlab.pages.dev/tools/compress-jpg.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Compress JPG Online",
+    "url": "https://imgkitlab.pages.dev/tools/compress-jpg.html",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "description": "Free browser-based JPEG compression tool with no upload."
+  }
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="compress-jpg.html">Compress JPG</a>
+        <a href="resize-image.html">Resize</a>
+        <a href="../pages/about.html">About</a>
+      </nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>Compress JPG Online</h1>
+        <p class="subtitle">Reduce JPEG file size with adjustable quality. Processing happens entirely in your browser.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your JPG here</strong> or click to browse</p>
+          <p class="hint">JPEG, PNG, WebP · Max 25 MB</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-group">
+            <label for="quality">JPEG Quality: <span id="qualityValue">80%</span></label>
+            <input type="range" id="quality" min="10" max="100" value="80">
+          </div>
+          <button type="button" class="btn btn-primary" id="processBtn">Compress Image</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Compressed</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
+          <div class="stats-bar" id="statsBar" hidden></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download JPG</button></div>
+        </div>
+        <section class="content-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item"><h3>Is my image uploaded to a server?</h3><p>No. Compression uses the Canvas API in your browser. Your file never leaves your device.</p></div>
+          <div class="faq-item"><h3>What quality setting should I use?</h3><p>80% is a good balance for web use. Lower values mean smaller files but more visible compression artifacts.</p></div>
+          <div class="faq-item"><h3>Can I compress PNG files too?</h3><p>Yes. PNG files will be exported as JPEG. Use our <a href="compress-png.html">PNG compressor</a> for PNG-specific options.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card">
+          <h2>Related Tools</h2>
+          <ul class="related-links">
+            <li><a href="compress-png.html">Compress PNG</a></li>
+            <li><a href="jpg-to-webp.html">JPG to WebP</a></li>
+            <li><a href="resize-image.html">Resize Image</a></li>
+            <li><a href="remove-exif.html">Remove EXIF</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><h3>Tools</h3><ul><li><a href="compress-jpg.html">Compress JPG</a></li><li><a href="compress-png.html">Compress PNG</a></li><li><a href="resize-image.html">Resize</a></li></ul></div>
+        <div><h3>Site</h3><ul><li><a href="../pages/about.html">About</a></li><li><a href="../pages/privacy.html">Privacy</a></li><li><a href="../pages/contact.html">Contact</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 ImgKitLab. All processing happens locally in your browser.</p></div>
+    </div>
+  </footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+      const controls = document.getElementById('controls');
+      const quality = document.getElementById('quality');
+      const qualityValue = document.getElementById('qualityValue');
+      const processBtn = document.getElementById('processBtn');
+      const loading = document.getElementById('loading');
+      const message = document.getElementById('message');
+      const previewArea = document.getElementById('previewArea');
+      let currentFile = null;
+      let currentImg = null;
+      let resultBlob = null;
+
+      ImgKitLab.setupRangeSlider(quality, qualityValue, (v) => v + '%');
+      ImgKitLab.initDropZone(dropZone, fileInput, async (file) => {
+        try {
+          ImgKitLab.hideMessage(message);
+          currentFile = file;
+          currentImg = await ImgKitLab.loadImageFromFile(file);
+          document.getElementById('originalPreview').innerHTML = '';
+          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
+          document.getElementById('originalMeta').textContent = `${file.name} · ${ImgKitLab.formatFileSize(file.size)} · ${currentImg.naturalWidth}×${currentImg.naturalHeight}`;
+          ImgKitLab.showControls(controls);
+          previewArea.classList.remove('visible');
+          resultBlob = null;
+        } catch (e) {
+          ImgKitLab.showMessage(message, e.message);
+        }
+      });
+
+      async function compress() {
+        if (!currentImg) return;
+        ImgKitLab.hideMessage(message);
+        ImgKitLab.setLoading(loading, true);
+        processBtn.disabled = true;
+        try {
+          const canvas = ImgKitLab.imageToCanvas(currentImg);
+          const q = parseInt(quality.value, 10) / 100;
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, 'image/jpeg', q);
+          const url = URL.createObjectURL(resultBlob);
+          const resultPreview = document.getElementById('resultPreview');
+          resultPreview.innerHTML = `<img src="${url}" alt="Compressed preview">`;
+          document.getElementById('resultMeta').textContent = `${ImgKitLab.formatFileSize(resultBlob.size)} · ${currentImg.naturalWidth}×${currentImg.naturalHeight}`;
+          const saved = currentFile.size - resultBlob.size;
+          const statsBar = document.getElementById('statsBar');
+          statsBar.classList.add('is-visible'); statsBar.removeAttribute('hidden');
+          statsBar.innerHTML = saved > 0
+            ? `<span>Original: ${ImgKitLab.formatFileSize(currentFile.size)}</span><span>Compressed: ${ImgKitLab.formatFileSize(resultBlob.size)}</span><span class="saved">Saved ${ImgKitLab.formatFileSize(saved)} (${ImgKitLab.formatPercent(saved, currentFile.size)})</span>`
+            : `<span>Result: ${ImgKitLab.formatFileSize(resultBlob.size)} (file may be larger at high quality)</span>`;
+          previewArea.classList.add('visible');
+        } catch (e) {
+          ImgKitLab.showMessage(message, e.message);
+        } finally {
+          ImgKitLab.setLoading(loading, false);
+          processBtn.disabled = false;
+        }
+      }
+
+      processBtn.addEventListener('click', compress);
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '-compressed.jpg');
+      });
+    })();
+  </script>
+</body>
+</html>

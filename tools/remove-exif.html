@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remove EXIF Online Free - Strip Photo Metadata | ImgKitLab</title>
+  <meta name="description" content="Remove EXIF metadata from photos online in your browser. Strip GPS, camera info and hidden data. No upload — metadata stripped locally.">
+  <link rel="canonical" href="https://imgkitlab.pages.dev/tools/remove-exif.html">
+  <meta property="og:title" content="Remove EXIF Online Free | ImgKitLab">
+  <meta property="og:description" content="Strip photo metadata locally. No upload required.">
+  <meta property="og:url" content="https://imgkitlab.pages.dev/tools/remove-exif.html">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Remove EXIF Online","url":"https://imgkitlab.pages.dev/tools/remove-exif.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="privacy-banner"><strong>Private:</strong> Files never leave your device. No upload.</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo"><span class="logo-icon">IK</span>ImgKitLab</a>
+      <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">Home</a><a href="remove-exif.html">Remove EXIF</a><a href="compress-jpg.html">Compress</a><a href="../pages/about.html">About</a></nav>
+    </div>
+  </header>
+  <div class="ad-banner container"><div class="ad-slot ad-slot-banner" aria-hidden="true">Advertisement</div></div>
+  <main class="page-main" id="main-content">
+    <div class="container tool-layout">
+      <div class="tool-panel">
+        <h1>Remove EXIF Metadata</h1>
+        <p class="subtitle">Strip GPS location, camera settings, and other hidden metadata from photos. Metadata stripped locally on your device.</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon" aria-hidden="true"></div>
+          <p><strong class="drop-zone-label">Drop your photo here</strong> or click to browse</p>
+          <p class="hint">JPEG, PNG, WebP · Max 25 MB</p>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="controls" id="controls" hidden>
+          <div class="control-group">
+            <label for="outputFormat">Output Format</label>
+            <select id="outputFormat"><option value="image/jpeg">JPEG (recommended for photos)</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select>
+          </div>
+          <p class="hint" style="margin:0;color:var(--color-muted);font-size:0.9rem;">Re-encoding through Canvas removes EXIF, IPTC, and XMP metadata embedded in the file.</p>
+          <button type="button" class="btn btn-primary" id="processBtn">Remove Metadata</button>
+        </div>
+        <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
+        <div class="message" id="message"></div>
+        <div class="preview-area" id="previewArea">
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Cleaned</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
+          <div class="stats-bar" id="statsBar" hidden><span>Metadata stripped successfully. Visual content is unchanged.</span></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download Clean Image</button></div>
+        </div>
+        <section class="content-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item"><h3>What is EXIF data?</h3><p>EXIF is metadata embedded in photos by cameras and phones — including GPS coordinates, device model, date taken, and camera settings.</p></div>
+          <div class="faq-item"><h3>How does this tool remove metadata?</h3><p>We redraw the image pixels onto a new canvas and export a fresh file. Only pixel data is kept — all embedded metadata is discarded.</p></div>
+          <div class="faq-item"><h3>Is the image uploaded?</h3><p>No. Metadata removal happens entirely in your browser. Your photo never leaves your device.</p></div>
+        </section>
+      </div>
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sidebar" aria-hidden="true">Advertisement</div>
+        <div class="sidebar-card"><h2>Related Tools</h2><ul class="related-links">
+          <li><a href="compress-jpg.html">Compress JPG</a></li><li><a href="resize-image.html">Resize Image</a></li><li><a href="png-to-webp.html">PNG to WebP</a></li>
+        </ul></div>
+      </aside>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><h3>Privacy</h3><ul><li><a href="remove-exif.html">Remove EXIF</a></li></ul></div>
+        <div><h3>Site</h3><ul><li><a href="../pages/privacy.html">Privacy Policy</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 ImgKitLab.</p></div>
+    </div>
+  </footer>
+  <script src="../assets/js/common.js"></script>
+  <script>
+    (function () {
+      const message = document.getElementById('message');
+      let currentFile, currentImg, resultBlob, ext = 'jpg';
+
+      ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
+        try {
+          currentFile = file;
+          currentImg = await ImgKitLab.loadImageFromFile(file);
+          document.getElementById('originalPreview').innerHTML = '';
+          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
+          document.getElementById('originalMeta').textContent = `${file.name} · ${ImgKitLab.formatFileSize(file.size)} · May contain EXIF`;
+          ImgKitLab.showControls(document.getElementById('controls'));
+          document.getElementById('previewArea').classList.remove('visible');
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+      });
+
+      document.getElementById('processBtn').addEventListener('click', async () => {
+        if (!currentImg) return;
+        ImgKitLab.setLoading(document.getElementById('loading'), true);
+        try {
+          const mime = document.getElementById('outputFormat').value;
+          ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+          const canvas = ImgKitLab.imageToCanvas(currentImg);
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, 0.92);
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Cleaned image">`;
+          document.getElementById('resultMeta').textContent = `${ImgKitLab.formatFileSize(resultBlob.size)} · No metadata`;
+          ImgKitLab.showStatsBar(document.getElementById('statsBar'));
+          ImgKitLab.showPreview(document.getElementById('previewArea'));
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
+        finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '-no-exif.' + ext);
+      });
+    })();
+  </script>
+</body>
+</html>
