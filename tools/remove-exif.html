@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Remove EXIF Online Free - Strip Photo Metadata | ImgKitLab</title>
-  <meta name="description" content="Remove EXIF metadata from photos online in your browser. Strip GPS, camera info and hidden data. No upload — metadata stripped locally.">
+  <meta name="description" content="Remove EXIF metadata from photos in your browser. Export a clean copy — your original file stays unchanged. No upload.">
   <link rel="canonical" href="https://imgkitlab.pages.dev/tools/remove-exif.html">
   <meta property="og:title" content="Remove EXIF Online Free | ImgKitLab">
-  <meta property="og:description" content="Strip photo metadata locally. No upload required.">
+  <meta property="og:description" content="Export a metadata-free copy. Your original file is never modified. No upload.">
   <meta property="og:url" content="https://imgkitlab.pages.dev/tools/remove-exif.html">
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/css/site.css">
@@ -29,7 +29,7 @@
     <div class="container tool-layout">
       <div class="tool-panel">
         <h1>Remove EXIF Metadata</h1>
-        <p class="subtitle">Strip GPS location, camera settings, and other hidden metadata from photos. Metadata stripped locally on your device.</p>
+        <p class="subtitle">Export a new copy without GPS, camera settings, or other hidden metadata. Your original file stays untouched — processing runs entirely in your browser.</p>
         <div class="drop-zone" id="dropZone">
           <div class="drop-zone-icon" aria-hidden="true"></div>
           <p><strong class="drop-zone-label">Drop your photo here</strong> or click to browse</p>
@@ -45,7 +45,7 @@
             <label for="outputFormat">Output Format</label>
             <select id="outputFormat"><option value="image/jpeg">JPEG (recommended for photos)</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select>
           </div>
-          <p class="hint" style="margin:0;color:var(--color-muted);font-size:0.9rem;">Re-encoding through Canvas removes EXIF, IPTC, and XMP metadata embedded in the file.</p>
+          <p class="hint" style="margin:0;color:var(--color-muted);font-size:0.9rem;">Creates a new download without EXIF, IPTC, or XMP. Your uploaded file on disk is not modified.</p>
           <button type="button" class="btn btn-primary" id="processBtn">Remove Metadata</button>
         </div>
         <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
@@ -55,13 +55,15 @@
             <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
             <div class="preview-box"><h3>Cleaned</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
           </div>
-          <div class="stats-bar" id="statsBar" hidden><span>Metadata stripped successfully. Visual content is unchanged.</span></div>
-          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download Clean Image</button></div>
+          <div class="stats-bar" id="statsBar" hidden></div>
+          <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download Clean Copy</button></div>
         </div>
         <section class="content-section">
           <h2>Frequently Asked Questions</h2>
           <div class="faq-item"><h3>What is EXIF data?</h3><p>EXIF is metadata embedded in photos by cameras and phones — including GPS coordinates, device model, date taken, and camera settings.</p></div>
-          <div class="faq-item"><h3>How does this tool remove metadata?</h3><p>We redraw the image pixels onto a new canvas and export a fresh file. Only pixel data is kept — all embedded metadata is discarded.</p></div>
+          <div class="faq-item"><h3>How does this tool remove metadata?</h3><p>We redraw the image pixels onto a new canvas and export a fresh file. The new download has no embedded metadata. Your original photo on your device is never changed — you save the cleaned copy separately.</p></div>
+          <div class="faq-item"><h3>What is an ICC color profile?</h3><p>ICC data tells apps how to display accurate colors. It is not GPS or camera privacy data. When possible, we copy the ICC profile into your export so colors stay consistent.</p></div>
+          <div class="faq-item"><h3>Why can previews look slightly different?</h3><p>JPEG re-encoding may change compression slightly. Pixel dimensions stay the same; both previews are centered in the same frame.</p></div>
           <div class="faq-item"><h3>Is the image uploaded?</h3><p>No. Metadata is read and removed entirely in your browser. The list of detected fields is shown locally and never sent to any server.</p></div>
         </section>
       </div>
@@ -90,6 +92,35 @@
       const metadataContent = document.getElementById('metadataContent');
       let currentFile, currentImg, resultBlob, ext = 'jpg';
       let metadataReport = null;
+      let previewObjectUrl = null;
+
+      function formatDimensions(img) {
+        return `${img.naturalWidth}×${img.naturalHeight}`;
+      }
+
+      function buildStatsMessage(iccKept) {
+        const privacyCount = metadataReport?.items?.filter((i) => i.kind !== 'icc').length || 0;
+        const blocks = metadataReport?.blocks?.length ? [...new Set(metadataReport.blocks)].join(', ') : '';
+        const localNote = 'Your original file was not changed. Processed in your browser — nothing sent to any server.';
+        if (metadataReport?.hasPrivacyMetadata && blocks) {
+          return `Removed ${blocks} (${privacyCount} field${privacyCount === 1 ? '' : 's'} shown). ${localNote}`;
+        }
+        if (iccKept) {
+          return `No GPS or camera metadata found. ICC color profile kept for color accuracy. ${localNote}`;
+        }
+        if (metadataReport?.iccDetected) {
+          return `No GPS or camera metadata found. ICC is color data only, not private information. ${localNote}`;
+        }
+        return `No privacy metadata found. Clean copy exported successfully. ${localNote}`;
+      }
+
+      function canKeepIcc(mime) {
+        const icc = metadataReport?.icc;
+        if (!icc) return false;
+        if (mime === 'image/jpeg' && icc.jpegBytes) return true;
+        if (mime === 'image/png' && icc.pngIccpPayload) return true;
+        return false;
+      }
 
       ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
         try {
@@ -100,6 +131,7 @@
           ImgKitLab.renderMetadataPanel(metadataContent, metadataReport);
           metadataPanel.classList.add('is-visible');
           metadataPanel.removeAttribute('hidden');
+          if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
           ImgKitLab.showUploadPreview({
             file,
             img: currentImg,
@@ -108,7 +140,8 @@
             originalMeta: document.getElementById('originalMeta'),
             resultPreview: document.getElementById('resultPreview'),
             resultMeta: document.getElementById('resultMeta'),
-            metaText: `${file.name} · ${ImgKitLab.formatFileSize(file.size)} · ${metadataReport.hasMetadata ? 'Metadata detected locally' : 'No metadata detected'}`,
+            originalAsBlob: true,
+            metaText: `${ImgKitLab.getBaseName(file.name)} · ${ImgKitLab.formatFileSize(file.size)} · ${formatDimensions(currentImg)} · ${metadataReport.hasPrivacyMetadata ? 'Privacy metadata detected' : metadataReport.iccDetected ? 'ICC profile only' : 'No metadata detected'}`,
           });
           ImgKitLab.showControls(document.getElementById('controls'));
           document.getElementById('statsBar').classList.remove('is-visible');
@@ -123,21 +156,18 @@
         try {
           const mime = document.getElementById('outputFormat').value;
           ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+          const quality = mime === 'image/png' ? undefined : 0.97;
           const canvas = ImgKitLab.imageToCanvas(currentImg);
-          resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, 0.92);
-          const url = URL.createObjectURL(resultBlob);
-          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Cleaned image">`;
-          document.getElementById('resultMeta').textContent = `${ImgKitLab.formatFileSize(resultBlob.size)} · No embedded metadata`;
-          const removedCount = metadataReport?.items?.length || 0;
-          const blocks = metadataReport?.blocks?.length ? [...new Set(metadataReport.blocks)].join(', ') : '';
-          const statsBar = document.getElementById('statsBar');
-          let statsText = 'Metadata removed locally. Your file was not uploaded.';
-          if (metadataReport?.hasMetadata) {
-            statsText = blocks
-              ? `Removed ${blocks} metadata (${removedCount} field${removedCount === 1 ? '' : 's'} shown). File not uploaded.`
-              : `Embedded metadata stripped. File not uploaded.`;
+          resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, quality);
+          const iccKept = canKeepIcc(mime);
+          if (iccKept) {
+            resultBlob = await ImgKitLab.embedIccInExport(resultBlob, mime, metadataReport.icc);
           }
-          ImgKitLab.showStatsBar(statsBar, `<span>${statsText}</span>`);
+          if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+          previewObjectUrl = ImgKitLab.renderBlobPreview(resultBlob, document.getElementById('resultPreview'), 'Cleaned image');
+          const iccNote = iccKept ? ' · ICC kept' : '';
+          document.getElementById('resultMeta').textContent = `${formatDimensions(currentImg)} · ${ImgKitLab.formatFileSize(resultBlob.size)} · No EXIF/IPTC/XMP${iccNote}`;
+          ImgKitLab.showStatsBar(document.getElementById('statsBar'), `<span>${buildStatsMessage(iccKept)}</span>`);
           ImgKitLab.showPreview(document.getElementById('previewArea'));
         } catch (e) { ImgKitLab.showMessage(message, e.message); }
         finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }

@@ -42,12 +42,216 @@ const ImgKitLab = {
       seen.add(key);
       return true;
     });
+    const icc = this._extractIccProfile(bytes, view);
+    const iccDetected = blocks.includes('ICC Profile') || !!(icc.jpegBytes || icc.pngIccpPayload);
+    const privacyBlocks = blocks.filter((b) => b !== 'ICC Profile');
 
     return {
       items: unique,
-      blocks,
+      blocks: privacyBlocks,
+      icc,
+      iccDetected,
+      hasPrivacyMetadata: unique.some((i) => i.kind !== 'icc') || privacyBlocks.length > 0,
       hasMetadata: unique.length > 0 || blocks.length > 0,
     };
+  },
+
+  _extractIccProfile(bytes, view) {
+    if (bytes[0] === 0xff && bytes[1] === 0xd8) {
+      return { jpegBytes: this._extractJpegIccBytes(bytes, view), pngIccpPayload: null };
+    }
+    if (bytes[0] === 0x89 && bytes[1] === 0x50) {
+      return { jpegBytes: null, pngIccpPayload: this._extractPngIccpPayload(bytes, view) };
+    }
+    return { jpegBytes: null, pngIccpPayload: null };
+  },
+
+  _extractJpegIccBytes(bytes, view) {
+    const chunks = new Map();
+    let total = 0;
+    let i = 2;
+    while (i < bytes.length - 3) {
+      if (bytes[i] !== 0xff) { i++; continue; }
+      const marker = bytes[i + 1];
+      if (marker === 0xda || marker === 0xd9) break;
+      if (marker >= 0xd0 && marker <= 0xd9) { i += 2; continue; }
+      const len = view.getUint16(i + 2, false);
+      const start = i + 4;
+      const end = start + len - 2;
+      if (marker === 0xe2 && end <= bytes.length && this._ascii(bytes, start, 12) === 'ICC_PROFILE\0') {
+        const chunkNum = bytes[start + 12];
+        const chunkTotal = bytes[start + 13];
+        chunks.set(chunkNum, bytes.slice(start + 14, end));
+        total = chunkTotal;
+      }
+      i += 2 + len;
+    }
+    if (!chunks.size) return null;
+    const ordered = [];
+    for (let n = 1; n <= total; n++) {
+      if (!chunks.has(n)) return null;
+      ordered.push(chunks.get(n));
+    }
+    const out = new Uint8Array(ordered.reduce((sum, c) => sum + c.length, 0));
+    let offset = 0;
+    ordered.forEach((chunk) => { out.set(chunk, offset); offset += chunk.length; });
+    return out;
+  },
+
+  _extractPngIccpPayload(bytes, view) {
+    let i = 8;
+    while (i + 12 <= bytes.length) {
+      const len = view.getUint32(i, false);
+      const type = this._ascii(bytes, i + 4, 4);
+      const start = i + 8;
+      const end = start + len;
+      if (end > bytes.length) break;
+      if (type === 'iCCP') return bytes.slice(start, end);
+      i = end + 4;
+    }
+    return null;
+  },
+
+  _buildJpegIccSegment(iccBytes, chunkNum, chunkTotal) {
+    const header = new TextEncoder().encode('ICC_PROFILE\0');
+    const payloadSize = header.length + 2 + iccBytes.length;
+    const seg = new Uint8Array(4 + payloadSize);
+    seg[0] = 0xff;
+    seg[1] = 0xe2;
+    const len = payloadSize + 2;
+    seg[2] = (len >> 8) & 0xff;
+    seg[3] = len & 0xff;
+    seg.set(header, 4);
+    const o = 4 + header.length;
+    seg[o] = chunkNum;
+    seg[o + 1] = chunkTotal;
+    seg.set(iccBytes, o + 2);
+    return seg;
+  },
+
+  _injectJpegIcc(jpegBytes, iccBytes) {
+    const chunks = [];
+    const maxData = 65519 - 14;
+    const total = Math.max(1, Math.ceil(iccBytes.length / maxData));
+    for (let n = 0; n < total; n++) {
+      const part = iccBytes.slice(n * maxData, (n + 1) * maxData);
+      chunks.push(this._buildJpegIccSegment(part, n + 1, total));
+    }
+    const body = this._stripJpegIcc(jpegBytes);
+    const iccLen = chunks.reduce((sum, c) => sum + c.length, 0);
+    const out = new Uint8Array(2 + iccLen + body.length - 2);
+    out[0] = 0xff;
+    out[1] = 0xd8;
+    let offset = 2;
+    chunks.forEach((chunk) => { out.set(chunk, offset); offset += chunk.length; });
+    out.set(body.subarray(2), offset);
+    return out;
+  },
+
+  _stripJpegIcc(jpegBytes) {
+    if (jpegBytes[0] !== 0xff || jpegBytes[1] !== 0xd8) return jpegBytes;
+    const parts = [jpegBytes.slice(0, 2)];
+    const view = new DataView(jpegBytes.buffer, jpegBytes.byteOffset, jpegBytes.byteLength);
+    let i = 2;
+    while (i < jpegBytes.length - 1) {
+      if (jpegBytes[i] !== 0xff) break;
+      const marker = jpegBytes[i + 1];
+      if (marker === 0xda || marker === 0xd9) {
+        parts.push(jpegBytes.slice(i));
+        break;
+      }
+      if (marker >= 0xd0 && marker <= 0xd9) {
+        parts.push(jpegBytes.slice(i, i + 2));
+        i += 2;
+        continue;
+      }
+      if (i + 3 >= jpegBytes.length) break;
+      const len = view.getUint16(i + 2, false);
+      const start = i + 4;
+      const end = start + len - 2;
+      const isIcc = marker === 0xe2 && end <= jpegBytes.length && this._ascii(jpegBytes, start, 12) === 'ICC_PROFILE\0';
+      if (!isIcc) parts.push(jpegBytes.slice(i, i + 2 + len));
+      i += 2 + len;
+    }
+    const total = parts.reduce((sum, p) => sum + p.length, 0);
+    const out = new Uint8Array(total);
+    let offset = 0;
+    parts.forEach((part) => { out.set(part, offset); offset += part.length; });
+    return out;
+  },
+
+  _pngCrc32(type, data) {
+    const crcTable = this._pngCrcTable || (this._pngCrcTable = (() => {
+      const table = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+        table[n] = c >>> 0;
+      }
+      return table;
+    })());
+    let crc = 0xffffffff;
+    const bytes = new Uint8Array(4 + data.length);
+    bytes[0] = type.charCodeAt(0);
+    bytes[1] = type.charCodeAt(1);
+    bytes[2] = type.charCodeAt(2);
+    bytes[3] = type.charCodeAt(3);
+    bytes.set(data, 4);
+    for (let i = 0; i < bytes.length; i++) crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 1);
+    return (crc ^ 0xffffffff) >>> 0;
+  },
+
+  _buildPngChunk(type, data) {
+    const chunk = new Uint8Array(12 + data.length);
+    const view = new DataView(chunk.buffer);
+    view.setUint32(0, data.length, false);
+    chunk[4] = type.charCodeAt(0);
+    chunk[5] = type.charCodeAt(1);
+    chunk[6] = type.charCodeAt(2);
+    chunk[7] = type.charCodeAt(3);
+    chunk.set(data, 8);
+    view.setUint32(8 + data.length, this._pngCrc32(type, data), false);
+    return chunk;
+  },
+
+  _injectPngIccp(pngBytes, iccpPayload) {
+    if (pngBytes[0] !== 0x89) return pngBytes;
+    const signature = pngBytes.slice(0, 8);
+    const chunks = [];
+    const view = new DataView(pngBytes.buffer, pngBytes.byteOffset, pngBytes.byteLength);
+    let i = 8;
+    let inserted = false;
+    while (i + 12 <= pngBytes.length) {
+      const len = view.getUint32(i, false);
+      const type = this._ascii(pngBytes, i + 4, 4);
+      const end = i + 12 + len;
+      if (type === 'iCCP') { i = end; continue; }
+      if (!inserted && type === 'IDAT') {
+        chunks.push(this._buildPngChunk('iCCP', iccpPayload));
+        inserted = true;
+      }
+      chunks.push(pngBytes.slice(i, end));
+      i = end;
+    }
+    if (!inserted) return pngBytes;
+    const total = signature.length + chunks.reduce((sum, c) => sum + c.length, 0);
+    const out = new Uint8Array(total);
+    let offset = 0;
+    out.set(signature, offset); offset += signature.length;
+    chunks.forEach((chunk) => { out.set(chunk, offset); offset += chunk.length; });
+    return out;
+  },
+
+  async embedIccInExport(blob, mime, icc) {
+    if (!icc) return blob;
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    if (mime === 'image/jpeg' && icc.jpegBytes) {
+      return new Blob([this._injectJpegIcc(bytes, icc.jpegBytes)], { type: mime });
+    }
+    if (mime === 'image/png' && icc.pngIccpPayload) {
+      return new Blob([this._injectPngIccp(bytes, icc.pngIccpPayload)], { type: mime });
+    }
+    return blob;
   },
 
   _scanJpegSegments(bytes, view, items, blocks) {
@@ -77,7 +281,11 @@ const ImgKitLab = {
         }
       } else if (marker === 0xe2 && end <= bytes.length) {
         blocks.push('ICC Profile');
-        items.push({ label: 'ICC color profile', value: 'Embedded color profile data' });
+        items.push({
+          kind: 'icc',
+          label: 'ICC color profile',
+          value: 'Embedded color-management data (not GPS or camera info)',
+        });
       }
       i += 2 + len;
     }
@@ -104,7 +312,11 @@ const ImgKitLab = {
         if (chunk) items.push(chunk);
       } else if (type === 'iCCP') {
         blocks.push('ICC Profile');
-        items.push({ label: 'ICC color profile', value: 'Embedded color profile data' });
+        items.push({
+          kind: 'icc',
+          label: 'ICC color profile',
+          value: 'Embedded color-management data (not GPS or camera info)',
+        });
       }
       i = end + 4;
     }
@@ -317,27 +529,38 @@ const ImgKitLab = {
 
   renderMetadataPanel(container, data) {
     if (!container) return;
-    const { items, blocks, hasMetadata } = data;
+    const { items, blocks, iccDetected, hasPrivacyMetadata, hasMetadata } = data;
+    const privacyItems = items.filter((i) => i.kind !== 'icc');
     const blockText = blocks.length ? [...new Set(blocks)].join(', ') : '';
     let html = '<div class="metadata-privacy-banner" role="note">';
     html += '<strong>Read locally only.</strong> Metadata is inspected on your device and is never uploaded to any server.';
     html += '</div>';
 
-    if (hasMetadata) {
+    if (hasPrivacyMetadata) {
       if (blockText) {
-        html += `<p class="metadata-blocks">Embedded blocks found: <span>${blockText}</span></p>`;
+        html += `<p class="metadata-blocks">Privacy-related blocks: <span>${blockText}</span></p>`;
       }
-      if (items.length) {
+      if (privacyItems.length) {
         html += '<dl class="metadata-list">';
-        items.forEach(({ label, value }) => {
+        privacyItems.forEach(({ label, value }) => {
           html += `<div class="metadata-row"><dt>${label}</dt><dd>${this._escapeHtml(value)}</dd></div>`;
         });
         html += '</dl>';
       } else {
-        html += '<p class="metadata-note">Embedded metadata blocks were detected, but no common EXIF fields could be decoded.</p>';
+        html += '<p class="metadata-note">Privacy-related metadata blocks were detected, but no common EXIF fields could be decoded.</p>';
       }
-    } else {
+    } else if (!iccDetected) {
       html += '<p class="metadata-note">No embedded EXIF, XMP, IPTC, or PNG text metadata was detected. Re-encoding still produces a clean pixel-only file.</p>';
+    }
+
+    if (iccDetected) {
+      html += '<div class="metadata-icc-note" role="note">';
+      html += '<strong>About ICC color profiles</strong>';
+      html += '<ul class="metadata-icc-list">';
+      html += '<li>ICC data controls how colors are displayed on screen and in print.</li>';
+      html += '<li>It is color information only — not GPS, camera serial numbers, or other private data.</li>';
+      html += '<li>When supported, the original ICC profile is copied into your exported file.</li>';
+      html += '</ul></div>';
     }
 
     container.innerHTML = html;
@@ -1010,10 +1233,25 @@ const ImgKitLab = {
     container.appendChild(preview);
   },
 
-  showUploadPreview({ file, img, previewArea, originalPreview, originalMeta, resultPreview, resultMeta, metaText }) {
+  renderBlobPreview(blob, container, alt = 'Preview') {
+    if (!container || !blob) return null;
+    container.innerHTML = '';
+    const url = URL.createObjectURL(blob);
+    const preview = document.createElement('img');
+    preview.alt = alt;
+    preview.src = url;
+    container.appendChild(preview);
+    return url;
+  },
+
+  showUploadPreview({ file, img, previewArea, originalPreview, originalMeta, resultPreview, resultMeta, metaText, originalAsBlob = false }) {
     if (originalPreview) {
       originalPreview.innerHTML = '';
-      this.renderPreview(img, originalPreview);
+      if (originalAsBlob && file) {
+        this.renderBlobPreview(file, originalPreview, 'Original preview');
+      } else {
+        this.renderPreview(img, originalPreview);
+      }
     }
     if (originalMeta) {
       originalMeta.textContent = metaText
