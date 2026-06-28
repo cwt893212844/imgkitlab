@@ -1,3 +1,5 @@
 name = "imgkitlab"
 compatibility_date = "2024-06-01"
-pages_build_output_dir = "."
+
+[assets]
+directory = "."
