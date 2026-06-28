@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://imgkitlab.pages.dev/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/compress-jpg.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/compress-png.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/resize-image.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/png-to-webp.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/remove-exif.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/webp-to-png.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/jpg-to-webp.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/crop-image.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/circle-crop.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/instagram-image-resizer.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/tools/image-to-ico.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/pages/about.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/pages/privacy.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://imgkitlab.pages.dev/pages/contact.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://imgkitlab.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://imgkitlab.com/tools/compress-jpg.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://imgkitlab.com/tools/compress-png.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://imgkitlab.com/tools/resize-image.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://imgkitlab.com/tools/png-to-webp.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://imgkitlab.com/tools/remove-exif.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://imgkitlab.com/tools/webp-to-png.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://imgkitlab.com/tools/jpg-to-webp.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://imgkitlab.com/tools/crop-image.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://imgkitlab.com/tools/circle-crop.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://imgkitlab.com/tools/instagram-image-resizer.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://imgkitlab.com/tools/image-to-ico.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://imgkitlab.com/pages/about.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://imgkitlab.com/pages/privacy.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://imgkitlab.com/pages/contact.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
 </urlset>
