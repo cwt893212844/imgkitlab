@@ -47,7 +47,10 @@
         <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
         <div class="message" id="message"></div>
         <div class="preview-area" id="previewArea">
-          <div class="preview-box"><h3>Circle Result</h3><div id="resultPreview"></div></div>
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Circle Result</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
           <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download PNG</button></div>
         </div>
         <section class="content-section">
@@ -67,10 +70,21 @@
   <script>
     (function () {
       let currentFile, currentImg, resultBlob;
+      const previewArea = document.getElementById('previewArea');
       ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
         currentFile = file;
         currentImg = await ImgKitLab.loadImageFromFile(file);
+        ImgKitLab.showUploadPreview({
+          file,
+          img: currentImg,
+          previewArea,
+          originalPreview: document.getElementById('originalPreview'),
+          originalMeta: document.getElementById('originalMeta'),
+          resultPreview: document.getElementById('resultPreview'),
+          resultMeta: document.getElementById('resultMeta'),
+        });
         ImgKitLab.showControls(document.getElementById('controls'));
+        resultBlob = null;
       });
       document.getElementById('processBtn').addEventListener('click', async () => {
         if (!currentImg) return;
@@ -80,8 +94,9 @@
           const canvas = ImgKitLab.circleCropCanvas(currentImg, size);
           resultBlob = await ImgKitLab.canvasToBlob(canvas, 'image/png');
           const url = URL.createObjectURL(resultBlob);
-          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Circle crop" style="border-radius:50%;background:repeating-conic-gradient(#e2e8f0 0% 25%,#f8fafc 0% 50%) 50%/12px 12px">`;
-          document.getElementById('previewArea').classList.add('visible');
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Circle crop">`;
+          document.getElementById('resultMeta').textContent = `${size}×${size} PNG`;
+          previewArea.classList.add('visible');
         } catch (e) { ImgKitLab.showMessage(document.getElementById('message'), e.message); }
         finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
       });

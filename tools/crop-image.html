@@ -26,13 +26,19 @@
     <div class="container tool-layout">
       <div class="tool-panel">
         <h1>Crop Image Online</h1>
-        <p class="subtitle">Crop to a custom region using pixel coordinates. Preview before download.</p>
+        <p class="subtitle">Drag to select, move, or resize the crop region. Fine-tune with pixel values.</p>
         <div class="drop-zone" id="dropZone">
           <div class="drop-zone-icon" aria-hidden="true"></div>
           <p><strong class="drop-zone-label">Drop your image here</strong> or click to browse</p>
           <input type="file" id="fileInput" accept="image/*">
         </div>
         <div class="controls" id="controls" hidden>
+          <div class="crop-editor" id="cropEditor">
+            <p class="crop-editor-hint">Drag empty area to draw · drag inside to move · drag handles to resize</p>
+            <div class="crop-canvas-wrap">
+              <canvas id="cropCanvas" aria-label="Crop selection canvas"></canvas>
+            </div>
+          </div>
           <div class="control-row">
             <div class="control-group"><label for="cropX">X (left)</label><input type="number" id="cropX" min="0" value="0"></div>
             <div class="control-group"><label for="cropY">Y (top)</label><input type="number" id="cropY" min="0" value="0"></div>
@@ -48,11 +54,14 @@
         <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
         <div class="message" id="message"></div>
         <div class="preview-area" id="previewArea">
-          <div class="preview-box"><h3>Cropped Result</h3><div id="resultPreview"></div></div>
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Cropped Result</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
           <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download</button></div>
         </div>
         <section class="content-section">
-          <div class="faq-item"><h3>How do I choose crop values?</h3><p>X and Y are the top-left corner in pixels. Width and height define the crop box size. Defaults match your full image after upload.</p></div>
+          <div class="faq-item"><h3>How do I choose crop values?</h3><p>Drag on empty area to draw a box, drag inside the box to move it, drag corner/edge handles to resize. Fine-tune with the pixel fields below.</p></div>
         </section>
       </div>
       <aside class="sidebar">
@@ -68,34 +77,83 @@
   <script>
     (function () {
       let currentFile, currentImg, resultBlob, ext = 'png';
+      let imgW = 0, imgH = 0;
+      let cropEditor = null;
+
       const cropX = document.getElementById('cropX');
       const cropY = document.getElementById('cropY');
       const cropW = document.getElementById('cropW');
       const cropH = document.getElementById('cropH');
+      const cropCanvas = document.getElementById('cropCanvas');
       const message = document.getElementById('message');
+      const previewArea = document.getElementById('previewArea');
+      const cropInputs = [cropX, cropY, cropW, cropH];
+
+      function getCrop() {
+        return {
+          x: parseInt(cropX.value, 10) || 0,
+          y: parseInt(cropY.value, 10) || 0,
+          w: parseInt(cropW.value, 10) || 1,
+          h: parseInt(cropH.value, 10) || 1,
+        };
+      }
+
+      function setCrop({ x, y, w, h }) {
+        const c = ImgKitLab._clampCropRect(x, y, w, h, imgW, imgH);
+        cropX.value = c.x;
+        cropY.value = c.y;
+        cropW.value = c.w;
+        cropH.value = c.h;
+      }
+
+      function clampCropInputs() {
+        setCrop(getCrop());
+        if (cropEditor) cropEditor.redraw();
+      }
+
+      function setCropBounds() {
+        cropX.max = Math.max(0, imgW - 1);
+        cropY.max = Math.max(0, imgH - 1);
+        cropW.max = imgW;
+        cropH.max = imgH;
+      }
+
+      cropInputs.forEach((input) => {
+        input.addEventListener('input', clampCropInputs);
+      });
 
       ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
         currentFile = file;
         currentImg = await ImgKitLab.loadImageFromFile(file);
-        cropX.max = cropY.max = 0;
-        cropX.value = 0;
-        cropY.value = 0;
-        cropW.value = currentImg.naturalWidth;
-        cropH.value = currentImg.naturalHeight;
-        cropW.max = currentImg.naturalWidth;
-        cropH.max = currentImg.naturalHeight;
-        cropX.max = currentImg.naturalWidth - 1;
-        cropY.max = currentImg.naturalHeight - 1;
+        imgW = currentImg.naturalWidth;
+        imgH = currentImg.naturalHeight;
+        setCrop({ x: 0, y: 0, w: imgW, h: imgH });
+        setCropBounds();
+        if (cropEditor) cropEditor.destroy();
+        cropEditor = ImgKitLab.initRectCropEditor(cropCanvas, {
+          getImage: () => currentImg,
+          getCrop,
+          setCrop,
+          onChange: clampCropInputs,
+        });
+        cropEditor.redraw();
+        ImgKitLab.showUploadPreview({
+          file,
+          img: currentImg,
+          previewArea,
+          originalPreview: document.getElementById('originalPreview'),
+          originalMeta: document.getElementById('originalMeta'),
+          resultPreview: document.getElementById('resultPreview'),
+          resultMeta: document.getElementById('resultMeta'),
+        });
         ImgKitLab.showControls(document.getElementById('controls'));
-        document.getElementById('previewArea').classList.remove('visible');
+        resultBlob = null;
       });
 
       document.getElementById('processBtn').addEventListener('click', async () => {
         if (!currentImg) return;
-        const x = Math.max(0, parseInt(cropX.value, 10) || 0);
-        const y = Math.max(0, parseInt(cropY.value, 10) || 0);
-        const w = Math.min(parseInt(cropW.value, 10) || 1, currentImg.naturalWidth - x);
-        const h = Math.min(parseInt(cropH.value, 10) || 1, currentImg.naturalHeight - y);
+        clampCropInputs();
+        const { x, y, w, h } = getCrop();
         ImgKitLab.setLoading(document.getElementById('loading'), true);
         try {
           const mime = document.getElementById('outputFormat').value;
@@ -104,7 +162,8 @@
           resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, 0.92);
           const url = URL.createObjectURL(resultBlob);
           document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Cropped">`;
-          document.getElementById('previewArea').classList.add('visible');
+          document.getElementById('resultMeta').textContent = `${w}×${h} · ${ImgKitLab.formatFileSize(resultBlob.size)}`;
+          previewArea.classList.add('visible');
         } catch (e) { ImgKitLab.showMessage(message, e.message); }
         finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
       });

@@ -111,11 +111,16 @@
           ImgKitLab.hideMessage(message);
           currentFile = file;
           currentImg = await ImgKitLab.loadImageFromFile(file);
-          document.getElementById('originalPreview').innerHTML = '';
-          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
-          document.getElementById('originalMeta').textContent = `${file.name} · ${ImgKitLab.formatFileSize(file.size)}`;
+          ImgKitLab.showUploadPreview({
+            file,
+            img: currentImg,
+            previewArea,
+            originalPreview: document.getElementById('originalPreview'),
+            originalMeta: document.getElementById('originalMeta'),
+            resultPreview: document.getElementById('resultPreview'),
+            resultMeta: document.getElementById('resultMeta'),
+          });
           ImgKitLab.showControls(controls);
-          previewArea.classList.remove('visible');
         } catch (e) { ImgKitLab.showMessage(message, e.message); }
       });
 

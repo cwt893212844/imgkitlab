@@ -26,7 +26,7 @@
     <div class="container tool-layout">
       <div class="tool-panel">
         <h1>Instagram Image Resizer</h1>
-        <p class="subtitle">Resize photos to Instagram post, story, and reel dimensions with one click.</p>
+        <p class="subtitle">Crop and resize photos to Instagram post, story, and reel dimensions — no stretching.</p>
         <div class="drop-zone" id="dropZone">
           <div class="drop-zone-icon" aria-hidden="true"></div>
           <p><strong class="drop-zone-label">Drop your image here</strong> or click to browse</p>
@@ -43,16 +43,25 @@
             </div>
           </div>
           <p id="selectedPreset" class="hint" style="color:var(--color-muted);">Select a preset above, then resize.</p>
+          <div class="crop-editor" id="frameEditor" hidden>
+            <p class="crop-editor-hint">Drag inside frame to reposition · scroll to zoom</p>
+            <div class="crop-canvas-wrap">
+              <canvas id="frameCanvas" aria-label="Crop frame editor"></canvas>
+            </div>
+          </div>
           <button type="button" class="btn btn-primary" id="processBtn" disabled>Resize for Instagram</button>
         </div>
         <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
         <div class="message" id="message"></div>
         <div class="preview-area" id="previewArea">
-          <div class="preview-box"><h3>Result</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>Result</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
           <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download JPEG</button></div>
         </div>
         <section class="content-section">
-          <div class="faq-item"><h3>What size should Instagram posts be?</h3><p>Square posts work best at 1080×1080. Portrait posts use 1080×1350 (4:5). Stories and reels use 1080×1920 (9:16).</p></div>
+          <div class="faq-item"><h3>What size should Instagram posts be?</h3><p>Square posts work best at 1080×1080. Portrait posts use 1080×1350 (4:5). Stories and reels use 1080×1920 (9:16). Drag inside the frame to reposition, scroll to zoom — never stretched.</p></div>
         </section>
       </div>
       <aside class="sidebar">
@@ -68,13 +77,49 @@
   <script>
     (function () {
       let currentFile, currentImg, resultBlob, targetW, targetH, label;
+      let frame = { zoom: 1, panX: 0, panY: 0 };
+      let frameEditor = null;
+
       const processBtn = document.getElementById('processBtn');
+      const previewArea = document.getElementById('previewArea');
+      const frameCanvas = document.getElementById('frameCanvas');
+      const frameEditorEl = document.getElementById('frameEditor');
+
+      function getTarget() {
+        return { w: targetW || 0, h: targetH || 0 };
+      }
+
+      function showFrameEditor() {
+        frameEditorEl.hidden = false;
+        frameEditorEl.removeAttribute('hidden');
+        if (frameEditor) frameEditor.destroy();
+        frame = { zoom: 1, panX: 0, panY: 0 };
+        frameEditor = ImgKitLab.initCoverFrameEditor(frameCanvas, {
+          getImage: () => currentImg,
+          getTarget,
+          getFrame: () => frame,
+          setFrame: (f) => { frame = f; },
+        });
+        frameEditor.redraw();
+      }
 
       ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
         currentFile = file;
         currentImg = await ImgKitLab.loadImageFromFile(file);
+        ImgKitLab.showUploadPreview({
+          file,
+          img: currentImg,
+          previewArea,
+          originalPreview: document.getElementById('originalPreview'),
+          originalMeta: document.getElementById('originalMeta'),
+          resultPreview: document.getElementById('resultPreview'),
+          resultMeta: document.getElementById('resultMeta'),
+        });
         ImgKitLab.showControls(document.getElementById('controls'));
         processBtn.disabled = true;
+        frameEditorEl.hidden = true;
+        frameEditorEl.setAttribute('hidden', '');
+        resultBlob = null;
       });
 
       document.querySelectorAll('.preset').forEach((btn) => {
@@ -87,6 +132,7 @@
           document.querySelectorAll('.preset').forEach((b) => b.classList.remove('btn-primary'));
           btn.classList.add('btn-primary');
           btn.classList.remove('btn-secondary');
+          if (currentImg) showFrameEditor();
         });
       });
 
@@ -94,12 +140,12 @@
         if (!currentImg || !targetW) return;
         ImgKitLab.setLoading(document.getElementById('loading'), true);
         try {
-          const canvas = ImgKitLab.imageToCanvas(currentImg, targetW, targetH);
+          const canvas = ImgKitLab.coverCropCanvas(currentImg, targetW, targetH, frame);
           resultBlob = await ImgKitLab.canvasToBlob(canvas, 'image/jpeg', 0.92);
           const url = URL.createObjectURL(resultBlob);
           document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="Instagram sized">`;
           document.getElementById('resultMeta').textContent = `${targetW}×${targetH} · ${ImgKitLab.formatFileSize(resultBlob.size)}`;
-          document.getElementById('previewArea').classList.add('visible');
+          previewArea.classList.add('visible');
         } catch (e) { ImgKitLab.showMessage(document.getElementById('message'), e.message); }
         finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
       });

@@ -38,6 +38,10 @@
         <div class="loading" id="loading"><span class="spinner"></span> Processing…</div>
         <div class="message" id="message"></div>
         <div class="preview-area" id="previewArea">
+          <div class="preview-grid">
+            <div class="preview-box"><h3>Original</h3><div id="originalPreview"></div><div class="preview-meta" id="originalMeta"></div></div>
+            <div class="preview-box"><h3>PNG</h3><div id="resultPreview"></div><div class="preview-meta" id="resultMeta"></div></div>
+          </div>
           <div class="action-row"><button type="button" class="btn btn-primary" id="downloadBtn">Download PNG</button></div>
         </div>
         <section class="content-section">
@@ -58,23 +62,44 @@
   <script src="../assets/js/common.js"></script>
   <script>
     (function () {
-      let currentFile, resultBlob;
+      let currentFile, currentImg, resultBlob;
       const message = document.getElementById('message');
+      const previewArea = document.getElementById('previewArea');
+
       ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
-        currentFile = file;
-        await ImgKitLab.loadImageFromFile(file);
-        ImgKitLab.showControls(document.getElementById('controls'));
+        try {
+          ImgKitLab.hideMessage(message);
+          currentFile = file;
+          currentImg = await ImgKitLab.loadImageFromFile(file);
+          ImgKitLab.showUploadPreview({
+            file,
+            img: currentImg,
+            previewArea,
+            originalPreview: document.getElementById('originalPreview'),
+            originalMeta: document.getElementById('originalMeta'),
+            resultPreview: document.getElementById('resultPreview'),
+            resultMeta: document.getElementById('resultMeta'),
+          });
+          ImgKitLab.showControls(document.getElementById('controls'));
+          resultBlob = null;
+        } catch (e) { ImgKitLab.showMessage(message, e.message); }
       });
+
       document.getElementById('processBtn').addEventListener('click', async () => {
-        if (!currentFile) return;
+        if (!currentImg) return;
+        ImgKitLab.hideMessage(message);
         ImgKitLab.setLoading(document.getElementById('loading'), true);
         try {
-          const img = await ImgKitLab.loadImageFromFile(currentFile);
-          resultBlob = await ImgKitLab.canvasToBlob(ImgKitLab.imageToCanvas(img), 'image/png');
-          document.getElementById('previewArea').classList.add('visible');
+          resultBlob = await ImgKitLab.canvasToBlob(ImgKitLab.imageToCanvas(currentImg), 'image/png');
+          const url = URL.createObjectURL(resultBlob);
+          document.getElementById('resultPreview').innerHTML = `<img src="${url}" alt="PNG result">`;
+          document.getElementById('resultMeta').textContent =
+            `${ImgKitLab.formatFileSize(resultBlob.size)} · ${currentImg.naturalWidth}×${currentImg.naturalHeight}`;
+          previewArea.classList.add('visible');
         } catch (e) { ImgKitLab.showMessage(message, e.message); }
         finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }
       });
+
       document.getElementById('downloadBtn').addEventListener('click', () => {
         if (resultBlob) ImgKitLab.downloadBlob(resultBlob, ImgKitLab.getBaseName(currentFile.name) + '.png');
       });

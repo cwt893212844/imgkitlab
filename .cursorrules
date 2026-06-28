@@ -1,0 +1,60 @@
+# ImgKitLab — 项目进度记忆
+
+## 项目概览
+- **品牌**: ImgKitLab（占位域名 imgkitlab.com，尚未购买）
+- **路径**: `e:\000AI变现\08-网站3`
+- **定位**: 浏览器端图片工具站，纯静态 HTML/JS，Canvas API，无后端，AdSense 变现
+- **线上地址**: https://imgkitlab.pages.dev
+- **GitHub**: https://github.com/cwt893212844/imgkitlab （branch: `main`）
+- **部署**: Cloudflare Pages（方案 A，Git 连接，`cwt893212844` 账号）
+
+## 技术栈
+- 纯静态：`index.html` + `tools/*.html` + `pages/*.html`
+- 共享：`assets/css/site.css`、`assets/js/common.js`
+- 设计：IBM Plex Sans，OKLCH token，Impeccable product register（list-row 首页）
+- 文档：`PRODUCT.md`、`DESIGN.md`
+- `wrangler.toml`（Worker 直传备用，当前主部署为 Pages Git）
+
+## 已完成
+- [x] 11 个工具页 + 首页 + about/privacy/contact
+- [x] Impeccable 重设计（audit 18→19/20 预估，animate 状态动效，touch target + slider a11y）
+- [x] P2 修复：触摸目标 ≥44px、`aria-valuetext` 滑块
+- [x] 移除 live.js 开发注入；canonical/sitemap 临时指向 `imgkitlab.pages.dev`
+- [x] Cloudflare Pages 部署成功（Git → `cwt893212844/imgkitlab`）
+- [x] **Bug 修复（cfd3fbb）**: 原图预览不显示（blob URL revoke + cloneNode）；PNG 压缩默认 WebP；输出变大时提示
+- [x] **功能修复**: WebP→PNG 原图/结果双栏预览；裁剪工具鼠标拖拽选区 + 像素微调
+- [x] **全站统一**: 上传即显示原图预览（`showUploadPreview`）；透明图预览区棋盘格铺满容器
+- [x] **固定尺寸适配**: Instagram/预设尺寸改为 `coverCropCanvas` 居中裁剪，不再拉伸变形
+- [x] **交互裁剪**: `initRectCropEditor`（拖拽/移动/手柄缩放）+ `initCoverFrameEditor`（框内拖拽平移/滚轮缩放）；含 image-to-ico
+- [x] **remove-exif**: 本地解析并展示 EXIF/XMP/IPTC 字段，强调未上传
+
+## 工具列表（11）
+compress-jpg, compress-png, resize-image, png-to-webp, remove-exif, webp-to-png, jpg-to-webp, crop-image, circle-crop, instagram-image-resizer, image-to-ico
+
+## 已知问题 / 注意
+- Cloudflare 会把 `.html` 308 到无后缀 URL（正常）
+- PNG → PNG 经 canvas 重编码通常会变大，已默认 WebP 并加提示
+- `contact@imgkitlab.com` 为占位，需替换
+- 买域名后全站 `imgkitlab.pages.dev` → 真实域名替换（canonical、sitemap、JSON-LD）
+- 兄弟项目 GIS 站：`e:\000AI变现\06-AI写网站`（GeoFileTools），建议独立域名
+
+## Next Steps（新对话优先）
+1. **验证线上修复**：强刷后测全站上传预览、circle-crop 透明背景铺满
+2. **Search Console**：添加 `imgkitlab.pages.dev`，提交 sitemap
+3. **买域名**（imgkitlab.com 等）→ CF Custom domains → 批量替换 canonical
+4. **替换** `pages/contact.html` 真实邮箱
+5. **AdSense**：有稳定流量后再申（privacy 页已预留条款）
+6. **可选**：`$impeccable polish` 收尾；按 Search Console 数据扩长尾工具页
+7. **可选**：Git 自动部署确认每次 push 后 CF 构建成功
+
+## 关键命令
+```bash
+cd "e:\000AI变现\08-网站3"
+git push origin main          # 触发 Cloudflare 自动部署
+python -m http.server 8080    # 本地预览
+```
+
+## 最近 commit
+- `cfd3fbb` Fix broken original preview and improve compression size feedback
+- `0e8ed5f` Configure wrangler static assets from repo root
+- `e7de18f` Prepare ImgKitLab for Cloudflare Pages deploy

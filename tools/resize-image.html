@@ -41,7 +41,13 @@
             <div class="control-group"><label for="width">Width (px)</label><input type="number" id="width" min="1" max="10000" value="800"></div>
             <div class="control-group"><label for="height">Height (px)</label><input type="number" id="height" min="1" max="10000" value="600"></div>
           </div>
-          <label class="checkbox-label"><input type="checkbox" id="keepRatio" checked> Keep aspect ratio</label>
+          <label class="checkbox-label"><input type="checkbox" id="keepRatio" checked> Keep aspect ratio (uncheck to crop to exact width × height)</label>
+          <div class="crop-editor" id="frameEditor" hidden>
+            <p class="crop-editor-hint">Drag inside frame to reposition · scroll to zoom</p>
+            <div class="crop-canvas-wrap">
+              <canvas id="frameCanvas" aria-label="Crop frame editor"></canvas>
+            </div>
+          </div>
           <div class="control-group">
             <label>Quick presets</label>
             <div class="preset-buttons">
@@ -69,6 +75,7 @@
         <section class="content-section">
           <h2>Frequently Asked Questions</h2>
           <div class="faq-item"><h3>Will resizing reduce quality?</h3><p>Downscaling generally looks fine. Upscaling beyond original size may appear blurry because new pixels are interpolated.</p></div>
+          <div class="faq-item"><h3>What happens when aspect ratio is unlocked?</h3><p>The image is cropped to your target size. Drag inside the frame to reposition, scroll to zoom — never stretched.</p></div>
           <div class="faq-item"><h3>Can I resize for Instagram?</h3><p>Yes. Use the Instagram preset or try our dedicated <a href="instagram-image-resizer.html">Instagram resizer</a>.</p></div>
           <div class="faq-item"><h3>Is this tool private?</h3><p>Yes. Images are processed locally and never uploaded.</p></div>
         </section>
@@ -97,16 +104,54 @@
       const heightInput = document.getElementById('height');
       const keepRatio = document.getElementById('keepRatio');
       const message = document.getElementById('message');
+      const frameEditorEl = document.getElementById('frameEditor');
+      const frameCanvas = document.getElementById('frameCanvas');
       let currentFile, currentImg, resultBlob, aspect = 1;
+      let frame = { zoom: 1, panX: 0, panY: 0 };
+      let frameEditor = null;
+
+      function getTarget() {
+        return {
+          w: Math.max(1, parseInt(widthInput.value, 10) || 1),
+          h: Math.max(1, parseInt(heightInput.value, 10) || 1),
+        };
+      }
+
+      function updateFrameEditor() {
+        if (!currentImg || keepRatio.checked) {
+          frameEditorEl.hidden = true;
+          frameEditorEl.setAttribute('hidden', '');
+          if (frameEditor) { frameEditor.destroy(); frameEditor = null; }
+          return;
+        }
+        frameEditorEl.hidden = false;
+        frameEditorEl.removeAttribute('hidden');
+        if (frameEditor) frameEditor.destroy();
+        frame = { zoom: 1, panX: 0, panY: 0 };
+        frameEditor = ImgKitLab.initCoverFrameEditor(frameCanvas, {
+          getImage: () => currentImg,
+          getTarget,
+          getFrame: () => frame,
+          setFrame: (f) => { frame = f; },
+        });
+        frameEditor.redraw();
+      }
 
       function syncHeight() {
-        if (keepRatio.checked && aspect) heightInput.value = Math.round(parseInt(widthInput.value, 10) / aspect);
+        if (keepRatio.checked && aspect) {
+          heightInput.value = Math.round(parseInt(widthInput.value, 10) / aspect);
+          updateFrameEditor();
+        }
       }
       function syncWidth() {
-        if (keepRatio.checked && aspect) widthInput.value = Math.round(parseInt(heightInput.value, 10) * aspect);
+        if (keepRatio.checked && aspect) {
+          widthInput.value = Math.round(parseInt(heightInput.value, 10) * aspect);
+          updateFrameEditor();
+        }
       }
-      widthInput.addEventListener('input', syncHeight);
-      heightInput.addEventListener('input', syncWidth);
+      widthInput.addEventListener('input', () => { syncHeight(); if (!keepRatio.checked && frameEditor) frameEditor.redraw(); });
+      heightInput.addEventListener('input', () => { syncWidth(); if (!keepRatio.checked && frameEditor) frameEditor.redraw(); });
+      keepRatio.addEventListener('change', updateFrameEditor);
 
       document.querySelectorAll('.preset').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -119,6 +164,7 @@
           widthInput.value = w;
           heightInput.value = h;
           if (btn.dataset.w !== '50') keepRatio.checked = false;
+          updateFrameEditor();
         });
       });
 
@@ -129,11 +175,18 @@
           aspect = currentImg.naturalWidth / currentImg.naturalHeight;
           widthInput.value = currentImg.naturalWidth;
           heightInput.value = currentImg.naturalHeight;
-          document.getElementById('originalPreview').innerHTML = '';
-          ImgKitLab.renderPreview(currentImg, document.getElementById('originalPreview'));
-          document.getElementById('originalMeta').textContent = `${currentImg.naturalWidth}×${currentImg.naturalHeight} · ${ImgKitLab.formatFileSize(file.size)}`;
+          ImgKitLab.showUploadPreview({
+            file,
+            img: currentImg,
+            previewArea: document.getElementById('previewArea'),
+            originalPreview: document.getElementById('originalPreview'),
+            originalMeta: document.getElementById('originalMeta'),
+            resultPreview: document.getElementById('resultPreview'),
+            resultMeta: document.getElementById('resultMeta'),
+            metaText: `${currentImg.naturalWidth}×${currentImg.naturalHeight} · ${ImgKitLab.formatFileSize(file.size)}`,
+          });
           ImgKitLab.showControls(document.getElementById('controls'));
-          document.getElementById('previewArea').classList.remove('visible');
+          updateFrameEditor();
         } catch (e) { ImgKitLab.showMessage(message, e.message); }
       });
 
@@ -143,7 +196,9 @@
         const h = Math.max(1, parseInt(heightInput.value, 10) || 1);
         ImgKitLab.setLoading(document.getElementById('loading'), true);
         try {
-          const canvas = ImgKitLab.imageToCanvas(currentImg, w, h);
+          const canvas = keepRatio.checked
+            ? ImgKitLab.imageToCanvas(currentImg, w, h)
+            : ImgKitLab.coverCropCanvas(currentImg, w, h, frame);
           const mime = document.getElementById('outputFormat').value;
           resultBlob = await ImgKitLab.canvasToBlob(canvas, mime, 0.92);
           const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
