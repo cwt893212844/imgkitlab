@@ -41,9 +41,9 @@
             <div class="control-group">
               <label for="outputFormat">Output Format</label>
               <select id="outputFormat">
-                <option value="image/png">PNG (lossless)</option>
-                <option value="image/jpeg">JPEG (smaller, no transparency)</option>
                 <option value="image/webp">WebP (smallest)</option>
+                <option value="image/jpeg">JPEG (smaller, no transparency)</option>
+                <option value="image/png">PNG (lossless, often larger)</option>
               </select>
             </div>
             <div class="control-group" id="qualityGroup">
@@ -104,6 +104,7 @@
         if (outputFormat.value === 'image/png') qualityGroup.setAttribute('hidden', '');
         else qualityGroup.removeAttribute('hidden');
       });
+      outputFormat.dispatchEvent(new Event('change'));
 
       ImgKitLab.initDropZone(document.getElementById('dropZone'), document.getElementById('fileInput'), async (file) => {
         try {
@@ -133,9 +134,7 @@
           const saved = currentFile.size - resultBlob.size;
           const statsBar = document.getElementById('statsBar');
           statsBar.classList.add('is-visible'); statsBar.removeAttribute('hidden');
-          statsBar.innerHTML = saved > 0
-            ? `<span class="saved">Saved ${ImgKitLab.formatFileSize(saved)} (${ImgKitLab.formatPercent(saved, currentFile.size)})</span>`
-            : `<span>Output: ${ImgKitLab.formatFileSize(resultBlob.size)}</span>`;
+          statsBar.innerHTML = ImgKitLab.buildCompressionStats(currentFile.size, resultBlob.size);
           previewArea.classList.add('visible');
         } catch (e) { ImgKitLab.showMessage(message, e.message); }
         finally { ImgKitLab.setLoading(document.getElementById('loading'), false); }

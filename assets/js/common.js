@@ -219,10 +219,43 @@ const ImgKitLab = {
 
   renderPreview(img, container) {
     container.innerHTML = '';
-    const clone = img.cloneNode();
-    clone.style.maxWidth = '100%';
-    clone.style.maxHeight = '280px';
-    container.appendChild(clone);
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!w || !h) return;
+
+    const maxH = 280;
+    const scale = Math.min(1, maxH / h);
+    const dw = Math.max(1, Math.round(w * scale));
+    const dh = Math.max(1, Math.round(h * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = dw;
+    canvas.height = dh;
+    canvas.getContext('2d').drawImage(img, 0, 0, dw, dh);
+
+    const preview = document.createElement('img');
+    preview.alt = 'Preview';
+    preview.style.maxWidth = '100%';
+    preview.style.maxHeight = '280px';
+    preview.src = canvas.toDataURL('image/png');
+    container.appendChild(preview);
+  },
+
+  buildCompressionStats(originalSize, resultSize) {
+    const saved = originalSize - resultSize;
+    if (saved > 0) {
+      return [
+        `<span>Original: ${this.formatFileSize(originalSize)}</span>`,
+        `<span>Compressed: ${this.formatFileSize(resultSize)}</span>`,
+        `<span class="saved">Saved ${this.formatFileSize(saved)} (${this.formatPercent(saved, originalSize)})</span>`,
+      ].join('');
+    }
+    const extra = resultSize - originalSize;
+    return [
+      `<span>Original: ${this.formatFileSize(originalSize)}</span>`,
+      `<span>Output: ${this.formatFileSize(resultSize)}</span>`,
+      `<span class="stats-warn">+${this.formatFileSize(extra)} larger — try WebP/JPEG or lower quality</span>`,
+    ].join('');
   },
 
   cropCanvas(img, x, y, width, height) {

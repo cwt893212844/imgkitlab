@@ -146,9 +146,7 @@
           const saved = currentFile.size - resultBlob.size;
           const statsBar = document.getElementById('statsBar');
           statsBar.classList.add('is-visible'); statsBar.removeAttribute('hidden');
-          statsBar.innerHTML = saved > 0
-            ? `<span>Original: ${ImgKitLab.formatFileSize(currentFile.size)}</span><span>Compressed: ${ImgKitLab.formatFileSize(resultBlob.size)}</span><span class="saved">Saved ${ImgKitLab.formatFileSize(saved)} (${ImgKitLab.formatPercent(saved, currentFile.size)})</span>`
-            : `<span>Result: ${ImgKitLab.formatFileSize(resultBlob.size)} (file may be larger at high quality)</span>`;
+          statsBar.innerHTML = ImgKitLab.buildCompressionStats(currentFile.size, resultBlob.size);
           previewArea.classList.add('visible');
         } catch (e) {
           ImgKitLab.showMessage(message, e.message);
