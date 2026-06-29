@@ -1,10 +1,10 @@
 # ImgKitLab — 项目进度记忆
 
 ## 项目概览
-- **品牌**: ImgKitLab（占位域名 imgkitlab.com，尚未购买）
+- **品牌**: ImgKitLab（域名 imgkitlab.com 已购买）
 - **路径**: `e:\000AI变现\08-网站3`
 - **定位**: 浏览器端图片工具站，纯静态 HTML/JS，Canvas API，无后端，AdSense 变现
-- **线上地址**: https://imgkitlab.pages.dev
+- **线上地址**: https://imgkitlab.com（CF Pages；备用 pages.dev）
 - **GitHub**: https://github.com/cwt893212844/imgkitlab （branch: `main`）
 - **部署**: Cloudflare Pages（方案 A，Git 连接，`cwt893212844` 账号）
 
@@ -19,7 +19,7 @@
 - [x] 11 个工具页 + 首页 + about/privacy/contact
 - [x] Impeccable 重设计（audit 18→19/20 预估，animate 状态动效，touch target + slider a11y）
 - [x] P2 修复：触摸目标 ≥44px、`aria-valuetext` 滑块
-- [x] 移除 live.js 开发注入；canonical/sitemap 临时指向 `imgkitlab.pages.dev`
+- [x] 移除 live.js 开发注入；canonical/sitemap/JSON-LD 指向 `imgkitlab.com`
 - [x] Cloudflare Pages 部署成功（Git → `cwt893212844/imgkitlab`）
 - [x] **Bug 修复（cfd3fbb）**: 原图预览不显示；PNG 压缩默认 WebP；输出变大时提示
 - [x] **全站预览**: `showUploadPreview` + `renderBlobPreview`；双栏预览区棋盘格铺满、固定 280px 高度对齐
@@ -31,6 +31,8 @@
   - 原图不动、仅下载新副本；文案消除「本地上传失败」歧义
   - blob 预览一致；移除内部 280px 说明文字
 
+- [x] **上线收尾**：GSC 验证 + sitemap；Email Routing；contact 页去占位文案
+
 ## 工具列表（11）
 compress-jpg, compress-png, resize-image, png-to-webp, remove-exif, webp-to-png, jpg-to-webp, crop-image, circle-crop, instagram-image-resizer, image-to-ico
 
@@ -39,18 +41,15 @@ compress-jpg, compress-png, resize-image, png-to-webp, remove-exif, webp-to-png,
 - PNG → PNG 经 canvas 重编码通常会变大，已默认 WebP 并加提示
 - WebP 导出无法嵌入 ICC；仅 JPEG↔JPEG、PNG↔PNG 可保留 ICC
 - Canvas 重编码 JPEG 可能略改文件大小/观感，尺寸不变
-- `contact@imgkitlab.com` 为占位，需替换
-- 买域名后全站 `imgkitlab.pages.dev` → 真实域名替换（canonical、sitemap、JSON-LD）
+- `contact@imgkitlab.com` 经 CF Email Routing 转发至 Gmail
+- 买域名后全站 canonical 已切换至 `imgkitlab.com`（2026-06）
 - 兄弟项目 GIS 站：`e:\000AI变现\06-AI写网站`（GeoFileTools），建议独立域名
 - 本地未跟踪 `deploy.zip`（勿提交）
 
 ## Next Steps（新对话优先）
-1. **验证线上**：强刷测 remove-exif（ICC 保留、预览对齐、文案）、各工具拖拽裁剪
-2. **Search Console**：添加 `imgkitlab.pages.dev`，提交 sitemap
-3. **买域名** → CF Custom domains → 批量替换 canonical
-4. **替换** `pages/contact.html` 真实邮箱
-5. **AdSense**：有稳定流量后再申
-6. **可选**：按 Search Console 扩长尾工具页；`$impeccable polish` 收尾
+1. **观察 GSC**：每周看编制索引 / 效果报表（1–2 周后有数据）
+2. **AdSense**：有稳定流量后再申
+3. **可选**：Gmail「用这个地址发送」回复显示 contact@；按 Search Console 扩长尾工具页；`$impeccable polish` 收尾
 
 ## 关键命令
 ```bash
@@ -60,6 +59,5 @@ python -m http.server 8080    # 本地预览
 ```
 
 ## 最近 commit
-- `315da20` Polish remove-exif ICC retention, preview alignment, and copy
-- `f682714` Add interactive crop editors, upload previews, and local EXIF inspection
-- `cfd3fbb` Fix broken original preview and improve compression size feedback
+- `31b529c` Add Google Search Console verification file
+- `caadf26` Point canonical URLs and sitemap to imgkitlab.com
